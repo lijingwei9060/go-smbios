@@ -18,8 +18,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/digitalocean/go-smbios/smbios"
 	"github.com/google/go-cmp/cmp"
+	"github.com/lijingwei9060/go-smbios/smbios"
 )
 
 func TestDecoder(t *testing.T) {

@@ -44,19 +44,51 @@ func main() {
 
 	for _, s := range ss {
 		// Only look at memory devices.
-		if s.Header.Type == 17 {
-			out, err := smbios.ParseMemoryDevice(s)
+		// if s.Header.Type == 17 {
+		// 	out, err := smbios.ParseMemoryDevice(s)
+		// 	if err != nil {
+		// 		fmt.Print(err)
+		// 	}
+		// 	str, _ := json.Marshal(out)
+		// 	fmt.Print(string(str))
+		// }
+
+		// Code based on: https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.1.1.pdf.
+
+		if s.Header.Type == 0 {
+			out, err := smbios.ParseBIOSInformation(s)
 			if err != nil {
 				fmt.Print(err)
 			}
 			str, _ := json.Marshal(out)
 			fmt.Print(string(str))
 		}
-
-		// Code based on: https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.1.1.pdf.
-
-		if s.Header.Type == 0 {
-			out, err := smbios.ParseBIOSInformation(s)
+		if s.Header.Type == 1 {
+			out, err := smbios.ParseSystemInformation(s)
+			if err != nil {
+				fmt.Print(err)
+			}
+			str, _ := json.Marshal(out)
+			fmt.Print(string(str))
+		}
+		if s.Header.Type == 2 {
+			out, err := smbios.ParseBaseboardInformation(s)
+			if err != nil {
+				fmt.Print(err)
+			}
+			str, _ := json.Marshal(out)
+			fmt.Print(string(str))
+		}
+		if s.Header.Type == 3 {
+			out, err := smbios.ParseSystemEnclosure(s)
+			if err != nil {
+				fmt.Print(err)
+			}
+			str, _ := json.Marshal(out)
+			fmt.Print(string(str))
+		}
+		if s.Header.Type == 4 {
+			out, err := smbios.ParseProcessorInformation(s)
 			if err != nil {
 				fmt.Print(err)
 			}

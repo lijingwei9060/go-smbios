@@ -14,7 +14,7 @@ type SystemInformation struct {
 	Family       string //26 Stringnumber
 }
 
-func parseSystemInformation(s *Structure) (*SystemInformation, error) { // type 1
+func ParseSystemInformation(s *Structure) (*SystemInformation, error) { // type 1
 	if s == nil {
 		return nil, fmt.Errorf("structure s is null")
 	}

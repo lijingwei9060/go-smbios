@@ -1,8 +1,11 @@
 package smbios
 
-import "fmt"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
-// TODO: 涉及到的参数太复杂，现在先不做
+// TODO: 涉及到的参数太复杂，现在先不做太详细，很多细节没处理
 type ProcessorInformation struct { // 7.5 type 4
 	Header                   Header
 	SocketDesignation        string   // 4 String number
@@ -11,29 +14,29 @@ type ProcessorInformation struct { // 7.5 type 4
 	ProcessorManufacturer    string   // 7 String number
 	ProcessorID              string   // 8-15 7.5.3
 	ProcessorVersion         string   // 16 String number
-	Voltage                  uint8    // 17 7.5.4
+	Voltage                  string   // 17 7.5.4
 	ExternalClock            uint16   // 18-19
-	MaxSpeed                 uint16   // 20-21 uint:MHz
-	CurrentSpeed             uint16   // 22-23 uint:MHz
-	Status                   string   // 24
-	ProcessorUpgrade         uint8    // 25 7.5.5
+	MaxSpeed                 int      // 20-21 uint:MHz
+	CurrentSpeed             int      // 22-23 uint:MHz
+	Status                   uint8    // 24
+	ProcessorUpgrade         string   // 25 7.5.5
 	L1CacheHandle            uint16   // 26-27 2.1+
 	L2CacheHandle            uint16   // 28-29
 	L3CacheHandle            uint16   // 30-31 2.3+
 	SerialNumber             string   // 32 String number
 	AssetTag                 string   // 33 String number
 	PartNumber               string   // 34 String number
-	CoreCount                uint8    // 35 7.5.6 2.5+
-	CoreEnabled              uint8    // 36 7.5.7
-	ThreadCount              uint8    // 37 7.5.8
+	CoreCount                int      // 35 7.5.6 2.5+
+	CoreEnabled              int      // 36 7.5.7
+	ThreadCount              int      // 37 7.5.8
 	ProcessorCharacteristics []string // 38-39  7.5.9
 	ProcessorFamily2         string   // 40-41 7.5.2 2.6+
-	CoreCount2               uint16   // 42-43 7.5.6 3.0+
-	CoreEnabled2             uint16   // 44-45 7.5.7
-	ThreadCount2             uint16   // 46-47 7.5.8
+	CoreCount2               int      // 42-43 7.5.6 3.0+
+	CoreEnabled2             int      // 44-45 7.5.7
+	ThreadCount2             int      // 46-47 7.5.8
 }
 
-func parseProcessorInformation(s *Structure) (*ProcessorInformation, error) {
+func ParseProcessorInformation(s *Structure) (*ProcessorInformation, error) {
 	if s == nil {
 		return nil, fmt.Errorf("structure s is null")
 	}
@@ -60,6 +63,95 @@ func parseProcessorInformation(s *Structure) (*ProcessorInformation, error) {
 		ret.ProcessorFamily = Processor_Family[2]
 	} else {
 		ret.ProcessorFamily = pt
+	}
+
+	if len(s.Strings) >= 2 {
+		ret.ProcessorManufacturer = s.Strings[1]
+	}
+
+	pid := s.Formatted[4:12]
+	ret.ProcessorID = fmt.Sprintf("%02X %02X %02X %02X %02X %02X %02X %02X", pid[0], pid[1], pid[2], pid[3], pid[4], pid[5], pid[6], pid[7])
+
+	if len(s.Strings) >= 3 {
+		ret.ProcessorVersion = s.Strings[2]
+	}
+
+	t = int(s.Formatted[13])
+	if t >= 0 && t < len(Processor_Voltage) {
+		ret.Voltage = Processor_Voltage[t]
+	} else {
+		ret.Voltage = "Unknown"
+	}
+
+	ret.ExternalClock = binary.LittleEndian.Uint16(s.Formatted[14:16])
+	ret.MaxSpeed = int(binary.LittleEndian.Uint16(s.Formatted[16:18]))
+	ret.CurrentSpeed = int(binary.LittleEndian.Uint16(s.Formatted[18:20]))
+	ret.Status = uint8(s.Formatted[20])
+
+	t = int(s.Formatted[21])
+	if t > 0 && t <= len(Processor_Upgrade) {
+		ret.ProcessorUpgrade = Processor_Upgrade[t-1]
+	} else {
+		ret.ProcessorUpgrade = Processor_Upgrade[1]
+	}
+
+	ret.L1CacheHandle = binary.LittleEndian.Uint16(s.Formatted[22:24])
+	ret.L2CacheHandle = binary.LittleEndian.Uint16(s.Formatted[24:26])
+	ret.L3CacheHandle = binary.LittleEndian.Uint16(s.Formatted[26:28])
+
+	if len(s.Strings) >= 4 {
+		ret.SerialNumber = s.Strings[3]
+	}
+	if len(s.Strings) >= 5 {
+		ret.AssetTag = s.Strings[4]
+	}
+	if len(s.Strings) >= 6 {
+		ret.PartNumber = s.Strings[5]
+	}
+
+	cc := uint8(s.Formatted[31])
+	if cc != 0xFF {
+		ret.CoreCount = int(cc)
+	} else {
+		ret.CoreCount = int(binary.LittleEndian.Uint16(s.Formatted[38:40])) //count2
+
+	}
+
+	ce := uint8(s.Formatted[32])
+	if cc != 0xFF {
+		ret.CoreEnabled = int(ce)
+	} else {
+		ret.CoreEnabled = int(binary.LittleEndian.Uint16(s.Formatted[40:42]))
+
+	}
+
+	tc := uint8(s.Formatted[33])
+	if tc != 0xFF {
+		ret.ThreadCount = int(tc)
+	} else {
+		ret.ThreadCount = int(binary.LittleEndian.Uint16(s.Formatted[42:44]))
+	}
+
+	t = int(binary.LittleEndian.Uint16(s.Formatted[34:36]))
+	for i := uint(0); i < 8; i++ {
+		if (t>>i)&0x01 == 0x01 {
+			ret.ProcessorCharacteristics = append(ret.ProcessorCharacteristics, Processor_Characteristics[i])
+		}
+	}
+
+	t = int(binary.LittleEndian.Uint16(s.Formatted[36:38]))
+	pf2, exists := Processor_Family[t]
+	if !exists {
+		ret.ProcessorFamily2 = Processor_Family[2]
+	} else {
+		ret.ProcessorFamily2 = pf2
+	}
+
+	// 3.0+
+	if s.Header.Length > 42 {
+		ret.CoreCount2 = int(binary.LittleEndian.Uint16(s.Formatted[38:40])) //count2
+		ret.CoreEnabled2 = int(binary.LittleEndian.Uint16(s.Formatted[40:42]))
+		ret.ThreadCount2 = int(binary.LittleEndian.Uint16(s.Formatted[42:44]))
 	}
 
 	return ret, nil
@@ -370,10 +462,12 @@ var Processor_Upgrade = []string{ /* 7.5.5 */
 }
 
 var Processor_Characteristics = []string{ /* 7.5.9 */
-	"64-bit capable", /* 2 */
+	"Reserved",       /* bit 0 */
+	"Unknown",        /* bit 1 */
+	"64-bit capable", /* bit 2 */
 	"Multi-Core",
 	"Hardware Thread",
 	"Execute Protection",
 	"Enhanced Virtualization",
-	"Power/Performance Control", /* 7 */
+	"Power/Performance Control", /* bit 7 */
 }

@@ -20,7 +20,7 @@ type BaseboardInformation struct { // 7.3 type 2
 	//ContainedObjectHandles
 }
 
-func parseBaseboardInformation(s *Structure) (*BaseboardInformation, error) { // type 2
+func ParseBaseboardInformation(s *Structure) (*BaseboardInformation, error) { // type 2
 	if s == nil {
 		return nil, fmt.Errorf("structure s is null")
 	}

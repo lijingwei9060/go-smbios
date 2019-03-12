@@ -25,7 +25,7 @@ type SystemEnclosure struct { // 7.4 type 3
 	SKUNumber                    string // String number 2.7+
 }
 
-func parseSystemEnclosure(s *Structure) (*SystemEnclosure, error) {
+func ParseSystemEnclosure(s *Structure) (*SystemEnclosure, error) {
 	if s == nil {
 		return nil, fmt.Errorf("structure s is null")
 	}
@@ -83,11 +83,11 @@ func parseSystemEnclosure(s *Structure) (*SystemEnclosure, error) {
 	} else {
 		ret.SecurityStatus = Chassis_Security_State[1]
 	}
-	ret.OEMDefined = binary.LittleEndian.Uint32(s.Formatted[13:17])
-	ret.Height = uint8(s.Formatted[17])
-	ret.NumberOfPowerCords = uint8(s.Formatted[18])
-	ret.ContainedElementCount = uint8(s.Formatted[19])
-	ret.ContainedElementRecordLength = uint8(s.Formatted[20])
+	ret.OEMDefined = binary.LittleEndian.Uint32(s.Formatted[9:13])
+	ret.Height = uint8(s.Formatted[13])
+	ret.NumberOfPowerCords = uint8(s.Formatted[14])
+	ret.ContainedElementCount = uint8(s.Formatted[15])
+	ret.ContainedElementRecordLength = uint8(s.Formatted[16])
 	if len(s.Strings) >= 5 {
 		ret.SKUNumber = s.Strings[4]
 	}

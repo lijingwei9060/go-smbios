@@ -19,7 +19,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/digitalocean/go-smbios/smbios"
+	"github.com/lijingwei9060/go-smbios/smbios"
 )
 
 func TestStreamIntegration(t *testing.T) {
