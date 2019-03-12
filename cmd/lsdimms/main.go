@@ -16,11 +16,11 @@
 package main
 
 import (
-	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"log"
 
-	"github.com/digitalocean/go-smbios/smbios"
+	"github.com/lijingwei9060/go-smbios/smbios"
 )
 
 func main() {
@@ -44,40 +44,25 @@ func main() {
 
 	for _, s := range ss {
 		// Only look at memory devices.
-		if s.Header.Type != 17 {
-			continue
+		if s.Header.Type == 17 {
+			out, err := smbios.ParseMemoryDevice(s)
+			if err != nil {
+				fmt.Print(err)
+			}
+			str, _ := json.Marshal(out)
+			fmt.Print(string(str))
 		}
 
 		// Code based on: https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.1.1.pdf.
 
-		// TODO: this should go in a new package in go-smbios for parsing specific structures.
-
-		// Only parse the DIMM size.
-		dimmSize := int(binary.LittleEndian.Uint16(s.Formatted[8:10]))
-
-		if dimmSize == 0 {
-			fmt.Printf("[% 3s] empty\n", s.Strings[0])
-			continue
+		if s.Header.Type == 0 {
+			out, err := smbios.ParseBIOSInformation(s)
+			if err != nil {
+				fmt.Print(err)
+			}
+			str, _ := json.Marshal(out)
+			fmt.Print(string(str))
 		}
 
-		//If the DIMM size is 32GB or greater, we need to parse the extended field.
-		// Spec says 0x7fff in regular size field means we should parse the extended.
-		if dimmSize == 0x7fff {
-			dimmSize = int(binary.LittleEndian.Uint32(s.Formatted[24:28]))
-		}
-
-		// The granularity in which the value is specified
-		// depends on the setting of the most-significant bit (bit
-		// 15). If the bit is 0, the value is specified in megabyte
-		// units; if the bit is 1, the value is specified in kilobyte
-		// units.
-		//
-		// Little endian MSB for uint16 is in second byte.
-		unit := "KB"
-		if s.Formatted[9]&0x80 == 0 {
-			unit = "MB"
-		}
-
-		fmt.Printf("[% 3s] DIMM: %d %s\n", s.Strings[0], dimmSize, unit)
 	}
 }
