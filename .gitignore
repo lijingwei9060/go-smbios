@@ -1,0 +1,14 @@
+/.idea
+/build
+
+.DS_Store
+/lsdimms
+/cmd/lsdimms/lsdimms
+/cmd/lsdimms/lsdimms.exe
+/cmd/lssmbios/lssmbios
+/cmd/lssmbios/lssmbios.exe
+
+*.pyc
+
+/vendor/*
+!/vendor/vendor.json
