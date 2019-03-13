@@ -7,7 +7,6 @@ import (
 
 // TODO: 涉及到的参数太复杂，现在先不做太详细，很多细节没处理
 type ProcessorInformation struct { // 7.5 type 4
-	Header                   Header
 	SocketDesignation        string   // 4 String number
 	ProcessorType            string   // 5 7.5.1
 	ProcessorFamily          string   // 6 7.5.2
@@ -46,7 +45,6 @@ func ParseProcessorInformation(s *Structure) (*ProcessorInformation, error) {
 	ret := &ProcessorInformation{}
 	var t int
 
-	ret.Header = s.Header
 	if len(s.Strings) >= 1 {
 		ret.SocketDesignation = s.Strings[0]
 	}

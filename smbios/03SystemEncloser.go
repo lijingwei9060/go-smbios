@@ -6,7 +6,6 @@ import (
 )
 
 type SystemEnclosure struct { // 7.4 type 3
-	Header                       Header
 	Manufacturer                 string // 4 String number
 	Type                         string // 5
 	Version                      string // 6 String number
@@ -34,7 +33,6 @@ func ParseSystemEnclosure(s *Structure) (*SystemEnclosure, error) {
 	}
 
 	ret := &SystemEnclosure{}
-	ret.Header = s.Header
 	if len(s.Strings) >= 1 {
 		ret.Manufacturer = s.Strings[0]
 	}

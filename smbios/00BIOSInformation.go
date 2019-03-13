@@ -3,10 +3,10 @@ package smbios
 import (
 	"encoding/binary"
 	"fmt"
+	"strings"
 )
 
 type BIOSInformation struct { // type 0
-	Header                     Header
 	Vendor                     string // 4 String number
 	BIOSVersion                string // 5 String number
 	BIOSStartingAddressSegment uint16 // 6-7
@@ -34,18 +34,17 @@ func ParseBIOSInformation(s *Structure) (*BIOSInformation, error) {
 	}
 
 	ret := &BIOSInformation{}
-	ret.Header = s.Header
 	if len(s.Strings) >= 1 {
-		ret.Vendor = s.Strings[0]
+		ret.Vendor = strings.TrimSpace(s.Strings[0])
 	}
 
 	if len(s.Strings) >= 2 {
-		ret.BIOSVersion = s.Strings[1]
+		ret.BIOSVersion = strings.TrimSpace(s.Strings[1])
 	}
 	ret.BIOSStartingAddressSegment = binary.LittleEndian.Uint16(s.Formatted[2:4])
 
 	if len(s.Strings) >= 3 {
-		ret.BIOSReleaseDate = s.Strings[2]
+		ret.BIOSReleaseDate = strings.TrimSpace(s.Strings[2])
 	}
 
 	// unit :KB

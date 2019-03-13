@@ -6,7 +6,6 @@ import (
 )
 
 type BaseboardInformation struct { // 7.3 type 2
-	Header                         Header
 	Manufacturer                   string   // 4 String number
 	ProductName                    string   // 5 String number
 	Version                        string   // 6 String number
@@ -29,7 +28,6 @@ func ParseBaseboardInformation(s *Structure) (*BaseboardInformation, error) { //
 	}
 
 	ret := &BaseboardInformation{}
-	ret.Header = s.Header
 	if len(s.Strings) >= 1 {
 		ret.Manufacturer = s.Strings[0]
 	}

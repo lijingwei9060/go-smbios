@@ -8,7 +8,6 @@ import (
 
 // A MemoryDeviceStructure is an SMBIOS structure.
 type MemoryDeviceStructure struct {
-	Header                                  Header
 	PhysicalMemoryArrayHandle               uint16
 	MemoryErrorInformationHandle            uint16
 	TotalWidth                              uint16 /* 2.1+ */
@@ -174,8 +173,7 @@ func ParseMemoryDevice(s *Structure) (*MemoryDeviceStructure, error) {
 		return nil, fmt.Errorf("parameter is not a memory device")
 	}
 
-	ret := &MemoryDeviceStructure{}
-	ret.Header = s.Header                                                           // 0-3
+	ret := &MemoryDeviceStructure{}                                                 // 0-3
 	ret.PhysicalMemoryArrayHandle = binary.LittleEndian.Uint16(s.Formatted[:2])     // 0-1
 	ret.MemoryErrorInformationHandle = binary.LittleEndian.Uint16(s.Formatted[2:4]) // 2-3
 	ret.TotalWidth = binary.LittleEndian.Uint16(s.Formatted[4:6])                   // 4-5

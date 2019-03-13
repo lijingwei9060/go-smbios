@@ -1,9 +1,11 @@
 package smbios
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type SystemInformation struct {
-	Header       Header
 	Manufacturer string // 4 String number
 	ProductName  string // 5 String number
 	Version      string // 6 String number
@@ -23,19 +25,18 @@ func ParseSystemInformation(s *Structure) (*SystemInformation, error) { // type 
 	}
 
 	ret := &SystemInformation{}
-	ret.Header = s.Header
 	if len(s.Strings) >= 1 {
-		ret.Manufacturer = s.Strings[0]
+		ret.Manufacturer = strings.TrimSpace(s.Strings[0])
 	}
 	if len(s.Strings) >= 2 {
-		ret.ProductName = s.Strings[1]
+		ret.ProductName = strings.TrimSpace(s.Strings[1])
 	}
 
 	if len(s.Strings) >= 3 {
-		ret.Version = s.Strings[2]
+		ret.Version = strings.TrimSpace(s.Strings[2])
 	}
 	if len(s.Strings) >= 4 {
-		ret.SerialNumber = s.Strings[3]
+		ret.SerialNumber = strings.TrimSpace(s.Strings[3])
 	}
 	/*
 	 * As of version 2.6 of the SMBIOS specification, the first 3
@@ -57,10 +58,10 @@ func ParseSystemInformation(s *Structure) (*SystemInformation, error) { // type 
 	}
 
 	if len(s.Strings) >= 5 {
-		ret.SKUNumber = s.Strings[4]
+		ret.SKUNumber = strings.TrimSpace(s.Strings[4])
 	}
 	if len(s.Strings) >= 6 {
-		ret.Family = s.Strings[5]
+		ret.Family = strings.TrimSpace(s.Strings[5])
 	}
 	return ret, nil
 }
