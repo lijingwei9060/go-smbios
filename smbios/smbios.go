@@ -12,7 +12,7 @@ type SMBIOS struct {
 	BIOSInformation       *BIOSInformation         // type 0
 	SystemInformation     *SystemInformation       // type 1
 	BaseboardInformations []*BaseboardInformation  // type 2
-	SystemEnclosure       *SystemEnclosure         // type 3
+	SystemEnclosures      []*SystemEnclosure       // type 3
 	ProcessorInformations []*ProcessorInformation  // type 4
 	MemoryDevices         []*MemoryDeviceStructure // type 17
 }
@@ -69,7 +69,7 @@ func GetSMBIOS() *SMBIOS {
 				fmt.Print(err)
 			}
 
-			ret.SystemEnclosure = out
+			ret.SystemEnclosures = append(ret.SystemEnclosures, out)
 		}
 		if s.Header.Type == 4 {
 			out, err := ParseProcessorInformation(s)
